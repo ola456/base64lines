@@ -16,7 +16,7 @@ var (
 func main() {
 	flag.Parse()
 
-	// Determine if input is from file or stdin
+	// determine if input is from file or stdin
 	var rawInput io.Reader
 	filename := flag.Arg(0)
 	if filename == "" || filename == "-" {
@@ -24,20 +24,30 @@ func main() {
 	} else {
 		r, err := os.Open(filename)
 		if err != nil {
-			fmt.Printf("Sorry, I could not load input. Error: %v", err)
+			fmt.Fprintf(os.Stderr, "Sorry, I could not load input. Error: %v", err)
 			os.Exit(1)
 		}
 		rawInput = r
 	}
 
-	// Encode alt. decode line by line
+	// encode alt. decode line by line
 	scanner := bufio.NewScanner(rawInput)
 	for scanner.Scan() {
 		if *decodeFlag {
-			decoded, err := base64.StdEncoding.DecodeString(scanner.Text())
+			base64Str := scanner.Text()
+
+			// add padding if necessary
+			switch len(base64Str) % 4 {
+			case 2:
+				base64Str += "=="
+			case 3:
+				base64Str += "="
+			}
+
+			decoded, err := base64.StdEncoding.DecodeString(base64Str)
 
 			if err != nil {
-				fmt.Println("decode error:", err)
+				fmt.Fprintf(os.Stderr, "decode error for %s: %s\n", base64Str, err)
 				return
 			}
 
@@ -50,7 +60,7 @@ func main() {
 	}
 
 	if err := scanner.Err(); err != nil {
-		fmt.Printf("Error: %v", err)
+		fmt.Fprintf(os.Stderr, "Error: %v", err)
 		os.Exit(1)
 	}
 }
