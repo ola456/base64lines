@@ -33,27 +33,27 @@ func main() {
 	// encode alt. decode line by line
 	scanner := bufio.NewScanner(rawInput)
 	for scanner.Scan() {
-		if *decodeFlag {
-			base64Str := scanner.Text()
+		line := scanner.Text()
 
+		if *decodeFlag {
 			// add padding if necessary
-			switch len(base64Str) % 4 {
+			switch len(line) % 4 {
 			case 2:
-				base64Str += "=="
+				line += "=="
 			case 3:
-				base64Str += "="
+				line += "="
 			}
 
-			decoded, err := base64.StdEncoding.DecodeString(base64Str)
+			decoded, err := base64.StdEncoding.DecodeString(line)
 
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "decode error for %s: %s\n", base64Str, err)
-				return
+				fmt.Fprintf(os.Stderr, "decode error for %s: %s\n", line, err)
+				continue
 			}
 
 			fmt.Println(string(decoded))
 		} else {
-			encoded := base64.StdEncoding.EncodeToString([]byte(scanner.Text()))
+			encoded := base64.StdEncoding.EncodeToString([]byte(line))
 
 			fmt.Println(encoded)
 		}
